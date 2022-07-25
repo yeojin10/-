@@ -1,1 +1,236 @@
 04-2 단순 연결 리스트의 ADT와 구현
+
+단순 연결 리스트 : 연결의 형태가 한쪽 방향으로 전개되고 시작과 끝이 분명히 존재
+정렬 기능이 추가된 연결 리스트의 ADT 
+-> CH03의 리스트 ADT에 SetSortRule함수만 추가
+  Operation:
+  void ListInit(List *plist); // 초기화
+  void LInsert(List *plist, Ldata data);  // 리스트에 데이터 저장
+  int LFirst(List *plist, LData *pdata);  // 첫번째 데이터 참조
+  int LNext(List *plist, LData *pdata);   // 두번째 이후 데이터 참조
+  int LRemove(List *plist);  // 데이터 삭제
+  int LCount(List *plist);   // 리스트에 저장되어 있는 데이터의 수 반환
+  void SetSortRule(List *plist, int (*comp)(Ldata d1, Ldata d2));  // (*새로 추가됨) 리스트에 정렬의 기준이 되는 함수를 등록
+    - '반환형이 int이고 LData형 인자를 두 개 전달받는 한수의 주소 값을 두 번째 인자로 전달해라!"
+    - cf) 여기선 새 노드를 추가할 때 리스트의 머리에 저장하는 방식 사용
+    - EX) int WhoisPrecede(Ldata d1, LData d2)
+          {
+              if(d1 < d2)
+                return 0;  // d1이 정렬 순서상 앞선다
+              else
+                return 1;  // d2가 정렬 순서상 앞서거나 같다
+          }
+   
+더미 노드(Dummy Node) 기반의 단순 연결 리스트
+-> 더미 노드(Dummy Node): 유효한 데이터를 지니지 않는 그냥 빈 노드
+-> 이전 04-1의 연결 리스트에서는 노드의 추가, 삭제, 조회에서 첫 번째 노드와 이후의 노드에 차이가 있었음
+   빈 노드 (더미노드)를 미리 넣어두면 처음 추가되는 노드가 구조상 두 번째 노드가 되므로 구분하지 않고 일관된 형태로 구성가능
+
+-----------------------------------------------------------------
+
+정렬 기능이 추가된 연결 리스트의 헤더파일 
+/* DLinkedList.h */
+
+#ihdef __D_LINKED_LIST_H__
+#DEFINE__D_LINKED_LIST_H__
+
+#define TRUE 1
+#define FALSE 0
+
+typedef int LData;
+
+typedef struct _node
+{
+    Ldata data;
+	struct _node * next;
+} Node;
+
+typedef struct _linkedList     	// 연결 리스트를 표현한 구조체의 정의
+{
+	Node * head;     // 구조체의 변수 선언
+	Node * cur;
+	Node * before;
+	int numOfData;
+	int (*comp)(LData d1, LData d2);
+} LinkedList;
+
+typedef LinkedList List;
+
+void ListInit(List * plist);	// 초기화 함수
+void Linsert(List * plist, Ldata *pdata);	// 노드 추가 위한 함수 
+
+int LFirst(List * plist, LData * pdata);  // 데이터 조회
+int LNext(List * plist, LData * pdata);   // 데이터 조회
+
+LData LRemove(List * plist);	// 노드 삭제
+int LCount(List * plist);
+
+void SetSortRule(List * plist, int (*comp)(LData d1, Ldata d2));
+
+#endif
+/* Ch03의 배열 기반 리스트의 헤더 파일에 선언된 함수에 SetSortRule 함수만 추가된 형태 */
+
+-------------------------------------------------------------------------------------
+
+연결 리스트의 소스파일
+/* DLinkedList.c */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "DlinkedList.h"
+
+void ListInit(List * plist)	// 초기화
+{
+	plist->head = (Node*)malloc(sizeof(Node));  // 동적할당
+	plist->head->next = NULL;
+	plist->comp = NULL;
+	plist->numOfData = 0;
+}
+
+/* 데이터 저장 */
+void FInsert(List * plist, LData data)	// 머리에 노드 추가하는 함수
+{
+	Node * newNode = (Node*)malloc(sizeof(Node));	// 새 노드 생성
+	newNode->data = data;							// 새 노드에 데이터 저장
+	
+	newNode->next = plist->head->next;				// 새 노드가 다른 노드 가리키도록
+	plist->head->next = newNoode;					// 더미 노드가 새 노드 가리키도록		
+	
+	(plist->numOfData)++;							// 저장된 노드 수 하나 증가
+}
+
+void SInsert(List * plist, LData data)  // 정렬 기준에 근거하여 노드 추가하는 함수 
+{
+	// 잠시 후 소개 & 설명
+}
+
+void LInsert(List * plist, Ldata data) // 데이터 저장 
+{
+	if(plist->comp == NULL)		// 정렬 기준 마련되지 않은 경우 
+		FInsert(plist, data);	// 머리에 노드 추가!
+	else 						// 정렬 기준 마련되었다면 
+		SInsert(plist, data);	// 정렬 기준에 근거하여 노드 추가!
+}
+
+/* 데이터 조회 */
+void LFirst(List * plist, LData * pdata) // 첫 번째 데이터 조회 
+{
+	if(plist->head->next == NULL)	// 더미 노드가 NULL을 가리킨다면,
+		return FALSE;				// 반환할 데이터가 없다!
+		
+	plist->before = plist->head;	// before는 더미 노드를 가리키게 함
+	plist->cur == plist->head->next; // cur은 첫 번째 노들르 가리키게 함
+	
+	*pdata = plist->cur->data;		// 첫 번째 노드의 데이터 전달
+	return TRUE;					// 데이터 반환 성공!
+}
+
+int LNext(List * plist, LData * pdata) //두 번째 이후 데이터 조회
+{
+	if(plist->cur->next == NULL) 	// cur이 NULL을 가리킨다면,
+		return FALSE;				// 반환할 데이터 없음
+		
+		plist->before = plist->cur;		// cur이 가리키던 것을 before가 가리킴 (한 칸씩 이동)
+		plist->cur = plist->cur->next;  // cur은 그 다음 노드를 가리킴 (한 칸씩 이동)
+		
+		*pdata = plist->cur->data;		// cur이 가리키는 노드의 데이터 전달
+		return true;					// 데이터 반환 성공!
+}
+
+/* 노드의 삭제 */
+LData LRemove(List * plist)  // 바로 이전에 호출된 LFirst or LNext함수가 반환한 데이터 삭제
+{
+	Node * rpos = plist->cur; 	// 소멸 대상의 주소 값을 rpos에 저장
+	LData rdata = rpos->data;	// 소멸 대상의 데이터를 rdata에 저장
+	
+	plist-> before->next == plist->cur->next;   // 소멸 대상을 리스트에서 제거
+	plist->cur == plist ->before;				// cur이 가리키는 위치 재조정
+	
+	free(rpos);					// 리스트에서 제거된 노드 삭제
+	(plist->numOfData)--;		// 저장된 데이터의 수 하나 감소
+	return rdata;				// 제거된 노드의 데이터 반환
+}
+
+/* 저장 데이터 수 count */
+int LCount(List * plist)
+{
+	return plist->numOfData;
+}
+
+void SetSortRule(List * plist, int (*comp)(Ldata d1, Ldata d2))
+{
+	// 잠시후 소개&설명
+}
+
+---------------------------------------------------------------------
+
+위의 연결 리스트를 기반으로 작성된 main 함수
+/* DlinkedListMain.c */
+
+#include (stdio.h>
+#include "DLinkedList.h"
+
+int main(void)
+{
+	/* 리스트의 생성 & 초기화 */
+	List list;
+	int data;
+	ListInit(*list);
+	
+	/* 5개의 데이터 저장 */
+	LInsert(&list, 11);  LInsert(*list, 11);
+	LInsert(&list, 22);  LInsert(&list, 22);  
+	LInsert(&list, 33);
+	
+	/* 데이터 조회 & 출력 */
+	printf("현재 데이터의 수: %d \n", LCount(&list));
+	
+	if(LFirst(&list, &data))
+	{
+		printf("%d ", data);
+		
+		whlie(LNext(&list, &data))
+			printf("%d ", &data);
+	}
+	printf("\n\n");
+	
+	/* 숫자 22를 검색하여 모두 삭제 */
+	if(LFirst(&list, &data))
+	{
+		if(data==22)
+			LRemove(&list);
+			
+		while(LNext(&list, &data))
+		{
+			if(data ==22)
+				LRemove(&list);
+		}
+	}
+	
+	/* 삭제 후 남아있는 데이터 전체 출력 */
+	printf("현재 데이터의 수 : %d \n", LCount(&list));
+	
+	if(LFirst(&list, &data))
+	{
+		printf("%d ", data);
+		
+		while(LNext(&list, &data))
+			printf("%d ", data);
+	}
+	printf("\n\n");
+	return 0;
+}
+_________실행 결과_____________________
+							   
+현재 데이터의 수: 5
+33 22 22 11 11 
+
+현재 데이터의 수: 3
+33 11 11
+_______________________________________
+---------------------------------------------------
+위의 main 함수는 Ch03의 배열 기반 리스트를 테스트 할 때 사용한 ListMain.c의 main 함수와 완전히 동일
+즉 우리가 구현 한 두 리스트의 자료구조는 서로 대체가 가능하다
+  but, 배열 리스트와 달리 연결 리스트에서는 새로운 노드를 앞 부분에 추가하는 형태로 구현 했기 때문에 실행결과에 차이가 있다. 
+
+	
