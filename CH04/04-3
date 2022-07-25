@@ -1,0 +1,47 @@
+04-3 연결 리스트의 정렬 삽입의 구현
+
+연결 리스트에서의 정렬 기준 설정과 관련된 부분
+-> SetSortRule 함수: 연결 리스트이 정렬 기준이 되는 함수 등록
+-> LinkedList의 멤버 comp: SetSortRule 함수를 통해서 전달된 함수 정보 저장
+-> SInsert 함수: comp에 등록된 정렬기준을 근거로 데이터 저장
+
+/* SetSortRule함수 정의 */
+void SetSortRule(List, * plist, int (*comp)(LData d1, LData d2))
+{
+   plist->comp = comp;
+ }
+
+/* SInsert 함수 정의 */
+void SInsert(List *plist, LData data)
+{
+    Node * newNode = (Node*)malloc(sizeof(Node));  // 새 노드 생성
+    Node * pred = plist->head;                      // pred는 더미 노드 가리킴
+    newNode->data = data;       // 새 노드에 데이터 저장
+  
+ 	// 새노드가 들어갈 위치를 찾기 위한 반복문
+  	while(pred->next != NULL && plist->comp(data, pred->next->data) !=0) // 더이상 연결된 노드 없는 경우 & comp가 0인 경우 제외
+  	{
+    	pred = pred-> next; // 다음 노드로 이동
+   	}
+   
+     newNode->next = pred->next;  // 새 노드의 오른쪽을 연결
+     pred->next = newNode         // 새 노드의 왼쪽을 연결
+   
+     (plist->numOfData)++;		// 저장된 데이터 수 하나 증가
+}
+
+/* 정렬 기준을 설정하기 위한 함수의 정의 */
+-> 두 개의 인자를 전달 받도록 함수를 정의
+-> 첫 번째 인자의 정렬 우선 순위가 높으면 0을, 그렇지 않으면 1을 반환
+-> 프로그래머가 정렬 기준을 결정하도록 유연성을 부여하기 위해 main 함수에 위치
+Ex) int WhoInPrecede(int d1, int d2)
+	{
+		if(d1 , d2)
+			return 0;
+		else
+			return 1;
+	}
+	
+----------------------------------------------------------------------------
+
+/* DlinkedListSortMain.c */
