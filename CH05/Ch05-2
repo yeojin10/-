@@ -1,0 +1,153 @@
+Ch05-2 양방향 연결 리스트
+양방향 연결 리스트 : 왼쪽 노드가 오른쪽 노드를 가리킴과 동시에 오른쪽 노드도 왼쪽노드를 가리키는 구조
+  - 양방향으로 얼마든지 조회 가능 -> 포인터 변수 before 필요X
+  - LPrevious 함수 추가 (: LNext함수의 반대 방향 노드 참조)
+  다음의 양방향 연결 리스트의구현에서는 LRemove함수 제외 (더미노드에서는 구현)
+
+----------------------------------------------------------------------------
+양방향 연결 리스트의 구현을 위한 헤더파일의 정의 
+
+/* DBLinkedList.h */
+
+#ifndef __DB_LINKED_LIST_H__
+#define __DB_LINKED_LIST_H__
+
+#define TRUE	1
+#define FALSE	0
+
+typedef int Data;
+
+typedef struct _node
+{
+	Data data;
+	struct _node * next;    // 오른쪽 노드 가리키는 포인터 변수
+	struct _node * prev;    // *왼쪽 노드 가리키는 포인터 변수*
+} Node;
+
+typedef struct _dbLinkedList
+{
+	Node * head;
+	Node * cur;
+	int numOfData;
+} DBLinkedList;
+
+typedef DBLinkedList List;
+
+void ListInit(List * plist);
+void LInsert(List * plist, Data data);
+
+int LFirst(List * plist, Data * pdata);
+int LNext(List * plist, Data * pdata);
+int LPrevious(List * plist, Data * pdata);		// 왼쪽 노드 참조
+
+int LCount(List * plist);
+
+#endif
+
+-----------------------------------------------------------------------------
+
+/*DBLinkedList.c */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "DBLinkedList.h"
+
+void ListInit(List * plist)		// 초기화
+{
+	plist->head = NULL;
+	plist->numOfData = 0;
+}
+
+void LInsert(List * plist, Data data)		// 데이터 저장
+{
+	Node * newNode = (Node*)malloc(sizeof(Node));
+	newNode->data = data;
+
+	newNode->next = plist->head;	// 새노드의 next를 NULL로 초기화한 것 pist->head대신 NULL넣어도 OK
+	if(plist->head != NULL)
+		plist->head->prev = newNode;	// 두 번째 이후 노드 추가할 때만 실행
+
+	newNode->prev = NULL;
+	plist->head = newNode;
+
+	(plist->numOfData)++;
+}
+
+int LFirst(List * plist, Data * pdata)	// 첫 번째 노드 데이터 조회
+{
+	if(plist->head == NULL)
+		return FALSE;
+
+	plist->cur = plist->head;		// cur이 첫 번째 노드 가리키게 함
+	*pdata = plist->cur->data;		// cur이 가리키는 노드의 데이터 반환
+
+	return TRUE;
+}
+
+int LNext(List * plist, Data * pdata)		// 두 번째 이후 노드 데이터 조회
+{
+	if(plist->cur->next == NULL)
+		return FALSE;
+
+	plist->cur = plist->cur->next;		// cur 오른쪽으로 이동
+	*pdata = plist->cur->data;
+
+	return TRUE;
+}
+
+int LPrevious(List * plist, Data * pdata)		// LNext의 반대 방향 데이터 조회
+{
+	if(plist->cur->prev == NULL)
+		return FALSE;
+
+	plist->cur = plist->cur->prev;		// cur 왼쪽으로 이동
+	*pdata = plist->cur->data;
+
+	return TRUE;
+}
+
+int LCount(List * plist)
+{
+	return plist->numOfData;
+}
+
+--------------------------------------------------------
+
+/* DBLinkedListMain.c */
+
+#include <stdio.h>
+#include "DBLinkedList.h"
+
+int main(void)
+{
+	// 양방향 연결 리스트의 생성 및 초기화  ///////
+	List list;
+	int data;
+	ListInit(&list);
+
+	// 8개의 데이터 저장  ///////
+	LInsert(&list, 1);  LInsert(&list, 2);
+	LInsert(&list, 3);  LInsert(&list, 4);
+	LInsert(&list, 5);  LInsert(&list, 6);
+	LInsert(&list, 7);  LInsert(&list, 8);
+
+	// 저장된 데이터의 조회  ///////
+	if(LFirst(&list, &data))
+	{
+		printf("%d ", data);	// 8
+
+		while(LNext(&list, &data)) 
+			printf("%d ", data);	// 7 6 5 4 3 2 1 
+		
+		while(LPrevious(&list, &data))
+			printf("%d ", data);	// 2 3 4 5 6 7 8 
+		
+		printf("\n\n");
+	}
+
+	return 0;
+}
+
+____________실행결과_____________________
+8 7 6 5 4 3 2 1 2 3 4 5 6 7 8
+________________________________________
