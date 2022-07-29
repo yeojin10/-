@@ -1,0 +1,17 @@
+Ch06-1 스택의 이해와 ADT 정의
+
+1. 스택(Stack): '쌓아 올려진 상자더미'
+  - "먼저 들어간 것이 나중에 나온다"
+  - LIFO (Last-In, First-Out)
+  
+2. 스택 ADT의 정의
+  - push : in(넣는다)
+  - pop : out (추출+삭제)
+  - peek : only추출 (삭제X)
+  Operations:
+  void Stackinit(Stack *pstack);  //스택의 초기화
+  int SInEmpty(Stack *pstack);  // 스택이 빈 경우 TRUE(1), 아닌 경우 FALSE(0) 반환
+  void SPush(Stack * pstack, Data data);  // 데이터 저장
+  Data SPop(Stack *pstack);     // 삭제 & 반환
+  Data SPeek(Stack *pstack);    // 반환
+  
